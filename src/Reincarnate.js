@@ -45,7 +45,10 @@ export default class Reincarnate {
         resolveProps = async () => {
           const resolvedProps = await this.incarnate.resolvePath(
             PATH,
-            props
+            {
+              props,
+              component: Component
+            }
           );
           const componentProps = {
             children: props.children,
