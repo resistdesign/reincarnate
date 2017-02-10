@@ -53,7 +53,7 @@ export default class Reincarnate {
           });
         };
 
-        render () {
+        render = () => {
           const { componentProps } = this.state;
 
           if (componentProps instanceof Object) {
@@ -68,7 +68,7 @@ export default class Reincarnate {
               </span>
             );
           }
-        }
+        };
       }
 
       return (
