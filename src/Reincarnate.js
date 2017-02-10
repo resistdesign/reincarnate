@@ -9,6 +9,7 @@ export default class Reincarnate {
 
   createElement = (Component, props) => {
     if (
+      Component instanceof Function &&
       props instanceof Object &&
       props.route instanceof Object &&
       typeof props.route.path === 'string' &&
@@ -57,7 +58,7 @@ export default class Reincarnate {
             resolvedProps;
           const componentProps = {
             children: props.children,
-            ...unmappedProps
+            ...(unmappedProps instanceof Object ? unmappedProps : props)
           };
 
           this.setState({
@@ -85,6 +86,12 @@ export default class Reincarnate {
 
       return (
         <Wrapper/>
+      );
+    } else if (Component instanceof Function) {
+      return (
+        <Component
+          {...props}
+        />
       );
     }
   };

@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import ReincarnateDemo from './ReincarnateDemo';
+import Routes from './Routes';
 
 const root = document.getElementById('app-root');
 
-ReactDOM.render(<ReincarnateDemo/>, root);
+ReactDOM.render(Routes, root);
