@@ -13,7 +13,9 @@ export default class Reincarnate {
       props.route instanceof Object &&
       typeof props.route.path === 'string' &&
       this.incarnate instanceof Object &&
-      this.incarnate.resolvePath instanceof Function
+      this.incarnate.resolvePath instanceof Function &&
+      this.incarnate.addInvalidationListener instanceof Function &&
+      this.incarnate.removeInvalidationListener instanceof Function
     ) {
       const PATH = props.route.path;
       const INCARNATE = this.incarnate;
@@ -43,7 +45,7 @@ export default class Reincarnate {
         };
 
         resolveProps = async () => {
-          const resolvedProps = await this.incarnate.resolvePath(
+          const resolvedProps = await INCARNATE.resolvePath(
             PATH,
             {
               props,
