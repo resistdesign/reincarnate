@@ -15,8 +15,8 @@ export default class Reincarnate {
       this.incarnate instanceof Object &&
       this.incarnate.resolvePath instanceof Function
     ) {
-      const INCARNATE = this.incarnate;
       const PATH = props.route.path;
+      const INCARNATE = this.incarnate;
 
       class Wrapper extends PureComponent {
         constructor () {
@@ -43,10 +43,14 @@ export default class Reincarnate {
         };
 
         resolveProps = async () => {
-          const componentProps = await this.incarnate.resolvePath(
-            props.route.path,
+          const resolvedProps = await this.incarnate.resolvePath(
+            PATH,
             props
           );
+          const componentProps = {
+            children: props.children,
+            ...resolvedProps
+          };
 
           this.setState({
             componentProps
