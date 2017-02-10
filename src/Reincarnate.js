@@ -2,9 +2,14 @@ import React, { PureComponent } from 'react';
 
 export default class Reincarnate {
   incarnate;
+  pathDelimiter = '/';
 
-  constructor ({ incarnate }) {
+  constructor ({
+    incarnate,
+    pathDelimiter = '/'
+  }) {
     this.incarnate = incarnate;
+    this.pathDelimiter = pathDelimiter
   }
 
   createElement = (Component, props) => {
@@ -12,14 +17,32 @@ export default class Reincarnate {
       Component instanceof Function &&
       props instanceof Object &&
       props.route instanceof Object &&
-      typeof props.route.path === 'string' &&
+      props.routes instanceof Array &&
       this.incarnate instanceof Object &&
       this.incarnate.resolvePath instanceof Function &&
       this.incarnate.addInvalidationListener instanceof Function &&
       this.incarnate.removeInvalidationListener instanceof Function
     ) {
-      const PATH = props.route.path;
       const INCARNATE = this.incarnate;
+      const PATH_LIST = [];
+
+      // TRICKY: Get the props for the specific point in the path
+      // that the current route represents.
+      for (let i = 0; i < props.routes.length; i++) {
+        const r = props.routes[i];
+
+        if (r instanceof Object) {
+          const pathPart = r.path === this.pathDelimiter ? '' : r.path;
+
+          PATH_LIST.push(pathPart);
+        }
+
+        if (r === props.route) {
+          break;
+        }
+      }
+
+      const PATH = PATH_LIST.join(this.pathDelimiter);
 
       class Wrapper extends PureComponent {
         constructor () {

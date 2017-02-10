@@ -22,7 +22,15 @@ export default (
       <Route
         path='panel'
         component={Panel1}
-      />
+      >
+        <IndexRoute
+          component={Panel1}
+        />
+        <Route
+          path='more'
+          component={Panel1}
+        />
+      </Route>
     </Route>
     <Route
       path='*'

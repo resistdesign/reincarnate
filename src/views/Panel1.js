@@ -1,6 +1,8 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, PropTypes as T } from 'react';
 
 export default class Panel1 extends PureComponent {
+  static propTypes = {};
+
   constructor () {
     super();
   }
@@ -9,6 +11,7 @@ export default class Panel1 extends PureComponent {
     return (
       <div>
         Panel 1
+        {this.props.children}
       </div>
     );
   };
