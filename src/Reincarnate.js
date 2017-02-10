@@ -50,9 +50,12 @@ export default class Reincarnate {
               component: Component
             }
           );
+          const unmappedProps = resolvedProps instanceof Map ?
+            resolvedProps.get(Component) :
+            resolvedProps;
           const componentProps = {
             children: props.children,
-            ...resolvedProps
+            ...unmappedProps
           };
 
           this.setState({
