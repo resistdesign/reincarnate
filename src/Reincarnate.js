@@ -3,13 +3,16 @@ import React, { PureComponent } from 'react';
 export default class Reincarnate {
   incarnate;
   pathDelimiter = '/';
+  pathAliasMap = {};
 
   constructor ({
     incarnate,
-    pathDelimiter = '/'
+    pathDelimiter = '/',
+    pathAliasMap = {}
   }) {
     this.incarnate = incarnate;
-    this.pathDelimiter = pathDelimiter
+    this.pathDelimiter = pathDelimiter;
+    this.pathAliasMap = pathAliasMap;
   }
 
   createElement = (Component, props) => {
@@ -34,7 +37,7 @@ export default class Reincarnate {
         if (r instanceof Object) {
           const pathPart = r.path === this.pathDelimiter ? '' : r.path;
 
-          PATH_LIST.push(pathPart);
+          PATH_LIST.push(pathPart || '');
         }
 
         if (r === props.route) {
@@ -42,7 +45,22 @@ export default class Reincarnate {
         }
       }
 
-      const PATH = PATH_LIST.join(this.pathDelimiter);
+      const JOINED_PATH = PATH_LIST.join(this.pathDelimiter);
+
+      let PATH;
+
+      // TRICKY: Some paths may contain the `incarnate` path delimiter so
+      // use the `pathAliasMap` to replace them with a less complex
+      // dependency name.
+      if (
+        this.pathAliasMap instanceof Object &&
+        this.pathAliasMap.hasOwnProperty(JOINED_PATH) &&
+        typeof this.pathAliasMap[JOINED_PATH] === 'string'
+      ) {
+        PATH = this.pathAliasMap[JOINED_PATH];
+      } else {
+        PATH = JOINED_PATH;
+      }
 
       class Wrapper extends PureComponent {
         constructor () {
