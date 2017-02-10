@@ -2,17 +2,17 @@ import React, { Component, PropTypes } from 'react';
 
 export default class ReincarnateDemo extends Component {
   static propTypes = {};
-  
-  constructor() {
+
+  constructor () {
     super();
   }
 
   state = {};
 
-  render() {
+  render () {
     return (
       <h1>
-        ReincarnateDemo
+        Reincarnate Demo
       </h1>
     );
   }
