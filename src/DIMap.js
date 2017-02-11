@@ -1,3 +1,4 @@
+import React from 'react';
 import Incarnate from '@resistdesign/incarnate';
 import DemoService from './services/Demo';
 
@@ -30,9 +31,19 @@ export default new Incarnate({
       }
     },
     '/panel/': {
-      factory: () => {
+      args: [
+        'demo-service'
+      ],
+      factory: async (srv) => {
+        const headers = await srv.getHeaders();
+
         return {
-          funStuff: 'Panel Index'
+          funStuff: 'Panel Index',
+          children: (
+            <pre>
+              {JSON.stringify(headers, null, '  ')}
+            </pre>
+          )
         };
       }
     }
