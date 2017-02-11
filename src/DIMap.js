@@ -23,6 +23,14 @@ export default new Incarnate({
         return new DemoService();
       }
     },
+    'json-headers': {
+      args: [
+        'demo-service'
+      ],
+      factory: async (srv) => {
+        return await srv.getHeaders();
+      }
+    },
     '': {
       factory: () => {
         return {
@@ -46,7 +54,7 @@ export default new Incarnate({
     },
     '/panel/': {
       args: [
-        'demo-service',
+        'json-headers',
         'store',
         (c, i) => {
           return () => {
@@ -54,9 +62,7 @@ export default new Incarnate({
           }
         }
       ],
-      factory: async (srv, store, invalidateStore) => {
-        const headers = await srv.getHeaders();
-
+      factory: async (headers, store, invalidateStore) => {
         return {
           funStuff: `Panel Index: Accessed ${store.count} Times.`,
           children: (
