@@ -58,11 +58,16 @@ export default new Incarnate({
         'store',
         (c, i) => {
           return () => {
+            i.invalidate(['json-headers']);
+          }
+        },
+        (c, i) => {
+          return () => {
             i.invalidate(['store']);
           }
         }
       ],
-      factory: async (headers, store, invalidateStore) => {
+      factory: async (headers, store, invalidateHeaders, invalidateStore) => {
         return {
           funStuff: `Panel Index: Accessed ${store.count} Times.`,
           children: (
@@ -70,6 +75,12 @@ export default new Incarnate({
               <pre>
                 {JSON.stringify(headers, null, '  ')}
               </pre>
+              <button
+                onClick={invalidateHeaders}
+              >
+                Update Headers
+              </button>
+              <br />
               <button
                 onClick={invalidateStore}
               >
