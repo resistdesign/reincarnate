@@ -2,8 +2,22 @@ import React from 'react';
 import Incarnate from '@resistdesign/incarnate';
 import DemoService from './services/Demo';
 
+let STORE = {
+  count: 0
+};
+
 export default new Incarnate({
   map: {
+    'store': {
+      factory: () => {
+        STORE = {
+          ...STORE,
+          count: STORE.count + 1
+        };
+
+        return STORE;
+      }
+    },
     'demo-service': {
       factory: () => {
         return new DemoService();
@@ -32,17 +46,30 @@ export default new Incarnate({
     },
     '/panel/': {
       args: [
-        'demo-service'
+        'demo-service',
+        'store',
+        (c, i) => {
+          return () => {
+            i.invalidate(['store']);
+          }
+        }
       ],
-      factory: async (srv) => {
+      factory: async (srv, store, invalidateStore) => {
         const headers = await srv.getHeaders();
 
         return {
-          funStuff: 'Panel Index',
+          funStuff: `Panel Index: Accessed ${store.count} Times.`,
           children: (
-            <pre>
-              {JSON.stringify(headers, null, '  ')}
-            </pre>
+            <div>
+              <pre>
+                {JSON.stringify(headers, null, '  ')}
+              </pre>
+              <button
+                onClick={invalidateStore}
+              >
+                Update Store Object
+              </button>
+            </div>
           )
         };
       }

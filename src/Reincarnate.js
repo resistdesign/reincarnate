@@ -87,13 +87,11 @@ export default class Reincarnate {
         };
 
         resolveProps = async () => {
-          const resolvedProps = await INCARNATE.resolvePath(
-            PATH,
-            {
-              props,
-              component: Component
-            }
-          );
+          INCARNATE.context = {
+            props,
+            component: Component
+          };
+          const resolvedProps = await INCARNATE.resolvePath(PATH);
           const unmappedProps = resolvedProps instanceof Map ?
             resolvedProps.get(Component) :
             resolvedProps;
