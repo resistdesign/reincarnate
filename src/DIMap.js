@@ -1,6 +1,7 @@
 import React from 'react';
 import Incarnate from '@resistdesign/incarnate';
 import DemoService from './services/Demo';
+import History from './History';
 
 let STORE = {
   count: 0
@@ -8,50 +9,32 @@ let STORE = {
 
 export default new Incarnate({
   map: {
-    'store': {
-      factory: () => {
-        STORE = {
-          ...STORE,
-          count: STORE.count + 1
-        };
-
-        return STORE;
-      }
-    },
-    'demo-service': {
-      factory: () => {
-        return new DemoService();
-      }
-    },
+    'history': { factory: () => History },
+    'store': { factory: () => STORE = { ...STORE, count: STORE.count + 1 } },
+    'demo-service': { factory: () => new DemoService() },
     'json-headers': {
-      args: [
-        'demo-service'
-      ],
-      factory: async (srv) => {
-        return await srv.getHeaders();
-      }
+      args: ['demo-service'],
+      factory: async (srv) => await srv.getHeaders()
     },
-    '': {
-      factory: () => {
-        return {
-          title: 'Reincarnate Demo'
-        };
-      }
-    },
+    '': { factory: () => ({ title: 'Reincarnate Demo' }) },
     '/': {
-      factory: () => {
+      args: ['history'],
+      factory: (history) => {
         return {
-          funStuff: 'In the top of the path - `/`'
+          funStuff: 'In the top of the path - `/`',
+          children: (
+            <div>
+              <button
+                onClick={() => history.push('/panel')}
+              >
+                Go To /panel
+              </button>
+            </div>
+          )
         };
       }
     },
-    '/panel': {
-      factory: () => {
-        return {
-          funStuff: 'Panel Route Direct'
-        };
-      }
-    },
+    '/panel': { factory: () => ({ funStuff: 'Panel Route Direct' }) },
     '/panel/': {
       args: [
         'json-headers',
@@ -65,9 +48,10 @@ export default new Incarnate({
           return () => {
             i.invalidate(['store']);
           }
-        }
+        },
+        'history'
       ],
-      factory: async (headers, store, invalidateHeaders, invalidateStore) => {
+      factory: async (headers, store, invalidateHeaders, invalidateStore, history) => {
         return {
           funStuff: `Panel Index: Accessed ${store.count} Times.`,
           children: (
@@ -85,6 +69,29 @@ export default new Incarnate({
                 onClick={invalidateStore}
               >
                 Update Store Object
+              </button>
+              <br />
+              <button
+                onClick={() => history.push('/panel/more')}
+              >
+                Go To /panel/more
+              </button>
+            </div>
+          )
+        };
+      }
+    },
+    '/panel/more': {
+      args: ['history'],
+      factory: (history) => {
+        return {
+          funStuff: 'MORE!',
+          children: (
+            <div>
+              <button
+                onClick={() => history.push('/')}
+              >
+                Home
               </button>
             </div>
           )
