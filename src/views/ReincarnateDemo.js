@@ -1,17 +1,24 @@
-import React, { PureComponent, PropTypes } from 'react';
+import React, { PureComponent, PropTypes as T } from 'react';
 
 export default class ReincarnateDemo extends PureComponent {
+  static propTypes = {
+    title: T.string
+  };
+
   constructor () {
     super();
   }
 
   render = () => {
-    const { children } = this.props;
+    const {
+      title,
+      children
+    } = this.props;
 
     return (
       <div>
         <h1>
-          Reincarnate Demo
+          {title}
         </h1>
         {children}
       </div>
