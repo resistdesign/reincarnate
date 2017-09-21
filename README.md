@@ -1,5 +1,11 @@
 # Reincarnate
 
+Use Incarnate with React.
+
+## Install
+
+`npm i -S reincarnate`
+
 ## Build/Run Demo
 
 1. Create An App: `rdx app`

@@ -1,14 +1,78 @@
 import React from 'react';
-import Incarnate from '@resistdesign/incarnate';
+import Incarnate from 'incarnate';
 import DemoService from './services/Demo';
 import History from './History';
+import AlbumService from './services/Album';
+import AlbumServiceConfig from './services/config/AlbumConfig';
+import Axios from 'axios';
 
 let STORE = {
-  count: 0
+  count: 0,
+  albumId: undefined
 };
 
 export default new Incarnate({
   map: {
+    // NEW...
+    'axios': {
+      args: [],
+      factory: () => {
+        return Axios;
+      }
+    },
+    'albumServiceConfig': {
+      args: [],
+      factory: () => {
+        return AlbumServiceConfig;
+      }
+    },
+    'albumService': {
+      args: [
+        'axios',
+        'albumServiceConfig'
+      ],
+      factory: async (httpService, config) => {
+        return new AlbumService({
+          httpService,
+          config
+        });
+      }
+    },
+    'albumId': {
+      args: [],
+      factory: () => {
+        return STORE.albumId;
+      }
+    },
+    'albumsList': {
+      args: [
+        'albumService',
+        'albumId'
+      ],
+      factory: async (service, id) => {
+        return await service.get(id);
+      }
+    },
+    '/albums': {
+      args: [
+        'albumsList',
+        'albumId',
+        (ctx, inc) => {
+          return (id) => {
+            STORE.albumId = id;
+            inc.invalidate(['albumId']);
+          }
+        }
+      ],
+      factory: async (albums, albumId, onAlbumIdChange) => {
+        return {
+          albums,
+          albumId,
+          onAlbumIdChange
+        };
+      }
+    },
+    // OLD...
     'history': { factory: () => History },
     'store': { factory: () => STORE = { ...STORE, count: STORE.count + 1 } },
     'demo-service': { factory: () => new DemoService() },
@@ -64,13 +128,13 @@ export default new Incarnate({
               >
                 Update Headers
               </button>
-              <br />
+              <br/>
               <button
                 onClick={invalidateStore}
               >
                 Update Store Object
               </button>
-              <br />
+              <br/>
               <button
                 onClick={() => history.push('/panel/more')}
               >

@@ -6,6 +6,7 @@ import History from './History';
 import PropInjector from './PropInjector';
 import ReincarnateDemo from './views/ReincarnateDemo';
 import Panel1 from './views/Panel1';
+import AlbumList from './views/AlbumList';
 
 export default (
   <Router
@@ -31,6 +32,10 @@ export default (
           component={Panel1}
         />
       </Route>
+      <Route
+        path='albums'
+        component={AlbumList}
+      />
     </Route>
     <Route
       path='*'
