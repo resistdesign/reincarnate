@@ -1,12 +1,28 @@
 import T from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, {PureComponent} from 'react';
+import Incarnate from 'incarnate';
+
+export const PATHS = {
+  ROUTE_CONTEXT: 'ROUTE_CONTEXT',
+  PROPS: 'PROPS',
+  COMPONENT: 'COMPONENT'
+};
+
+export function getRouteContextPath(propName, pathDelimiter = '.') {
+  const {ROUTE_CONTEXT} = PATHS;
+
+  return [ROUTE_CONTEXT, propName].join(pathDelimiter);
+}
 
 export class ReincarnateWrapper extends PureComponent {
   static propTypes = {
     incarnate: T.object,
     component: T.func,
     path: T.string,
-    routeProps: T.object
+    routeProps: T.object,
+    multiComponentKey: T.string,
+    childComponentMap: T.object,
+    onResolveError: T.func
   };
 
   mounted = false;
@@ -16,8 +32,11 @@ export class ReincarnateWrapper extends PureComponent {
   component;
   path;
   routeProps;
+  multiComponentKey;
+  childComponentMap;
+  onResolveError;
 
-  constructor () {
+  constructor() {
     super();
   }
 
@@ -30,11 +49,11 @@ export class ReincarnateWrapper extends PureComponent {
     this.assignProps(this.props);
   };
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
     this.assignProps(nextProps);
   }
 
-  shouldComponentUpdate () {
+  shouldComponentUpdate() {
     // TRICKY: DO NOT render while assigning props;
     return !this.assigningProps;
   }
@@ -44,73 +63,118 @@ export class ReincarnateWrapper extends PureComponent {
     this.unListen(this.path);
   };
 
-  unListen (path) {
+  unListen(path) {
     if (typeof path === 'string') {
-      this.incarnate.removeInvalidationListener(
-        path,
-        this.onInvalid
+      this.incarnate.removeEventListener(
+        Incarnate.EVENTS.PATH_CHANGE,
+        this.onPathChange
+      );
+      this.incarnate.removeEventListener(
+        Incarnate.EVENTS.ERROR,
+        this.handleResolveError
       );
     }
   }
 
-  listen (path) {
+  listen(path) {
     if (typeof path === 'string') {
-      this.incarnate.addInvalidationListener(
-        path,
-        this.onInvalid
+      this.incarnate.addEventListener(
+        Incarnate.EVENTS.PATH_CHANGE,
+        this.onPathChange
+      );
+      this.incarnate.addEventListener(
+        Incarnate.EVENTS.ERROR,
+        this.handleResolveError
       );
     }
   }
 
-  async assignProps (props) {
+  assignProps(props) {
     this.assigningProps = true;
 
     this.unListen(this.path);
     Object.assign(this, props);
     this.listen(this.path);
 
-    const componentProps = await this.resolveProps();
+    // Setup the route context.
+    // TRICKY: IMPORTANT: Only do this while NOT listening for changes to avoid an infinite loop.
+    this.incarnate.setPath(
+      getRouteContextPath(PATHS.PROPS, this.incarnate.pathDelimiter),
+      this.routeProps
+    );
+    this.incarnate.setPath(
+      getRouteContextPath(PATHS.COMPONENT, this.incarnate.pathDelimiter),
+      this.component
+    );
+
+    const componentProps = this.resolveProps();
 
     this.assigningProps = false;
 
-    this.safeSetState({
-      componentProps
-    });
+    if (componentProps instanceof Object) {
+      this.safeSetState({
+        componentProps
+      });
+    }
   }
 
-  safeSetState (...args) {
+  safeSetState(...args) {
     if (this.mounted) {
       this.setState(...args);
     }
   }
 
-  onInvalid = () => {
-    setTimeout(async () => {
-      this.safeSetState({
-        componentProps: await this.resolveProps()
-      });
-    }, 0);
+  onPathChange = (path) => {
+    if (path === this.path) {
+      setTimeout(() => {
+        const componentProps = this.resolveProps();
+
+        if (componentProps instanceof Object) {
+          this.safeSetState({
+            componentProps
+          });
+        }
+      }, 0);
+    }
   };
 
-  resolveProps = async () => {
-    this.incarnate.context = {
-      props: this.routeProps,
-      component: this.component
-    };
+  handleResolveError = (data) => {
+    if (this.onResolveError instanceof Function) {
+      this.onResolveError(data);
+    }
+  };
 
-    const resolvedProps = await this.incarnate.resolvePath(this.path);
-    const unmappedProps = resolvedProps instanceof Map ?
-      resolvedProps.get(this.component) :
-      resolvedProps;
+  resolveProps = () => {
+    try {
+      const resolvedProps = this.incarnate.getPath(this.path);
+      const unmappedProps = typeof this.multiComponentKey === 'string' && resolvedProps instanceof Object ?
+        resolvedProps[this.multiComponentKey] :
+        resolvedProps;
 
-    return {
-      children: this.routeProps.children,
-      ...(unmappedProps instanceof Object ? unmappedProps : this.routeProps)
-    };
+      const baseProps = unmappedProps instanceof Object ? unmappedProps : this.routeProps;
+
+      if (this.childComponentMap instanceof Object) {
+        return {
+          ...(Object.keys(this.childComponentMap).reduce((acc, childComponentSectionKey) => {
+            acc[childComponentSectionKey] = this.routeProps[childComponentSectionKey];
+
+            return acc;
+          }, {})),
+          ...baseProps
+        };
+      } else {
+        return {
+          children: this.routeProps.children,
+          ...baseProps
+        };
+      }
+    } catch (error) {
+      return undefined;
+    }
   };
 
   render = () => {
-    const { componentProps } = this.state;
+    const {componentProps} = this.state;
 
     if (componentProps instanceof Object) {
       const WrappedComponent = this.component;
@@ -123,7 +187,7 @@ export class ReincarnateWrapper extends PureComponent {
     } else {
       return (
         <span>
-                </span>
+        </span>
       );
     }
   };
@@ -133,15 +197,18 @@ export default class Reincarnate {
   incarnate;
   pathDelimiter = '/';
   pathAliasMap = {};
+  onResolveError;
 
-  constructor ({
-                 incarnate,
-                 pathDelimiter = '/',
-                 pathAliasMap = {}
-               }) {
+  constructor({
+                incarnate,
+                pathDelimiter = '/',
+                pathAliasMap = {},
+                onResolveError
+              }) {
     this.incarnate = incarnate;
     this.pathDelimiter = pathDelimiter;
     this.pathAliasMap = pathAliasMap;
+    this.onResolveError = onResolveError;
   }
 
   createElement = (Component, props) => {
@@ -150,30 +217,43 @@ export default class Reincarnate {
       props instanceof Object &&
       props.route instanceof Object &&
       props.routes instanceof Array &&
-      this.incarnate instanceof Object &&
-      this.incarnate.resolvePath instanceof Function &&
-      this.incarnate.addInvalidationListener instanceof Function &&
-      this.incarnate.removeInvalidationListener instanceof Function
+      this.incarnate instanceof Incarnate
     ) {
+      const {key: multiComponentKey, route: routeConfig = {}} = props || {};
+      const {components: componentMap} = routeConfig;
+      const cleanMultiComponentKey = componentMap instanceof Object ? multiComponentKey : undefined;
       const PATH_LIST = [];
+
+      let pathListComplete = false,
+        directChildRoute;
 
       // TRICKY: Get the props for the specific point in the path
       // that the current route represents.
       for (let i = 0; i < props.routes.length; i++) {
         const r = props.routes[i];
 
-        if (r instanceof Object) {
-          const pathPart = r.path === this.pathDelimiter ? '' : r.path;
+        if (pathListComplete) {
+          directChildRoute = r;
 
-          PATH_LIST.push(pathPart || '');
-        }
-
-        if (r === props.route) {
           break;
+        } else {
+          if (r instanceof Object) {
+            const pathPart = r.path === this.pathDelimiter ? '' : r.path;
+
+            PATH_LIST.push(pathPart || '');
+          }
+
+          if (r === props.route) {
+            pathListComplete = true;
+          }
         }
       }
 
-      const JOINED_PATH = PATH_LIST.join(this.pathDelimiter);
+      const {components: childComponentMap} = directChildRoute || {};
+
+      let JOINED_PATH = PATH_LIST.join(this.pathDelimiter);
+      // TRICKY: Correct for the root path.
+      JOINED_PATH = JOINED_PATH === '' ? this.pathDelimiter : JOINED_PATH;
 
       let PATH;
 
@@ -196,6 +276,9 @@ export default class Reincarnate {
           component={Component}
           path={PATH}
           routeProps={props}
+          multiComponentKey={cleanMultiComponentKey}
+          childComponentMap={childComponentMap}
+          onResolveError={this.onResolveError}
         />
       );
     } else if (Component instanceof Function) {
