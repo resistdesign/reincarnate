@@ -126,15 +126,13 @@ export class ReincarnateWrapper extends PureComponent {
 
   onPathChange = (path) => {
     if (path === this.path) {
-      setTimeout(() => {
-        const componentProps = this.resolveProps();
+      const componentProps = this.resolveProps();
 
-        if (componentProps instanceof Object) {
-          this.safeSetState({
-            componentProps
-          });
-        }
-      }, 0);
+      if (componentProps instanceof Object) {
+        this.safeSetState({
+          componentProps
+        });
+      }
     }
   };
 
