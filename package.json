@@ -1,5 +1,5 @@
 {
-  "name": "reincarnate",
+  "name": "resistdesign-reincarnate",
   "version": "0.0.0",
   "description": "An implementation of Incarnate for use with React.",
   "main": "src/Reincarnate.jsx",
@@ -44,12 +44,12 @@
   },
   "homepage": "https://github.com/resistdesign/reincarnate#readme",
   "devDependencies": {
-    "incarnate": "^2.0.0",
     "axios": "^0.15.3",
     "react-dom": "^15.4.0",
     "react-router": "^3.0.2"
   },
   "dependencies": {
+    "incarnate": "^3.4.1",
     "react": "^15.4.0"
   }
 }
