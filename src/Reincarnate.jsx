@@ -1,5 +1,5 @@
 import T from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, {PureComponent} from 'react';
 import Incarnate from 'incarnate';
 
 export const PATHS = {
@@ -8,8 +8,8 @@ export const PATHS = {
   COMPONENT: 'COMPONENT'
 };
 
-export function getRouteContextPath (propName, pathDelimiter = '.') {
-  const { ROUTE_CONTEXT } = PATHS;
+export function getRouteContextPath(propName, pathDelimiter = '.') {
+  const {ROUTE_CONTEXT} = PATHS;
 
   return [ROUTE_CONTEXT, propName].join(pathDelimiter);
 }
@@ -36,7 +36,7 @@ export class ReincarnateWrapper extends PureComponent {
   childComponentMap;
   onResolveError;
 
-  constructor () {
+  constructor() {
     super();
   }
 
@@ -49,11 +49,11 @@ export class ReincarnateWrapper extends PureComponent {
     this.assignProps(this.props);
   };
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
     this.assignProps(nextProps);
   }
 
-  shouldComponentUpdate () {
+  shouldComponentUpdate() {
     // TRICKY: DO NOT render while assigning props;
     return !this.assigningProps;
   }
@@ -63,7 +63,7 @@ export class ReincarnateWrapper extends PureComponent {
     this.unListen(this.path);
   };
 
-  unListen (path) {
+  unListen(path) {
     if (typeof path === 'string') {
       this.incarnate.removeEventListener(
         Incarnate.EVENTS.PATH_CHANGE,
@@ -76,7 +76,7 @@ export class ReincarnateWrapper extends PureComponent {
     }
   }
 
-  listen (path) {
+  listen(path) {
     if (typeof path === 'string') {
       this.incarnate.addEventListener(
         Incarnate.EVENTS.PATH_CHANGE,
@@ -89,7 +89,7 @@ export class ReincarnateWrapper extends PureComponent {
     }
   }
 
-  assignProps (props) {
+  assignProps(props) {
     this.assigningProps = true;
 
     this.unListen(this.path);
@@ -118,7 +118,7 @@ export class ReincarnateWrapper extends PureComponent {
     }
   }
 
-  safeSetState (...args) {
+  safeSetState(...args) {
     if (this.mounted) {
       this.setState(...args);
     }
@@ -172,7 +172,7 @@ export class ReincarnateWrapper extends PureComponent {
   };
 
   render = () => {
-    const { componentProps } = this.state;
+    const {componentProps} = this.state;
 
     if (componentProps instanceof Object) {
       const WrappedComponent = this.component;
@@ -197,12 +197,12 @@ export default class Reincarnate {
   pathAliasMap = {};
   onResolveError;
 
-  constructor ({
-                 incarnate,
-                 pathDelimiter = '/',
-                 pathAliasMap = {},
-                 onResolveError
-               }) {
+  constructor({
+                incarnate,
+                pathDelimiter = '/',
+                pathAliasMap = {},
+                onResolveError
+              }) {
     this.incarnate = incarnate;
     this.pathDelimiter = pathDelimiter;
     this.pathAliasMap = pathAliasMap;
@@ -217,8 +217,8 @@ export default class Reincarnate {
       props.routes instanceof Array &&
       this.incarnate instanceof Incarnate
     ) {
-      const { key: multiComponentKey, route: routeConfig = {} } = props || {};
-      const { components: componentMap } = routeConfig;
+      const {key: multiComponentKey, route: routeConfig = {}} = props || {};
+      const {components: componentMap} = routeConfig;
       const cleanMultiComponentKey = componentMap instanceof Object ? multiComponentKey : undefined;
       const PATH_LIST = [];
 
@@ -247,7 +247,7 @@ export default class Reincarnate {
         }
       }
 
-      const { components: childComponentMap } = directChildRoute || {};
+      const {components: childComponentMap} = directChildRoute || {};
 
       let JOINED_PATH = PATH_LIST.join(this.pathDelimiter);
       // TRICKY: Correct for the root path.
@@ -270,6 +270,7 @@ export default class Reincarnate {
 
       return (
         <ReincarnateWrapper
+          key={`ReincarnateWrapper:${PATH}`}
           incarnate={this.incarnate}
           component={Component}
           path={PATH}
