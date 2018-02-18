@@ -1,6 +1,6 @@
 {
   "name": "resistdesign-reincarnate",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "An implementation of Incarnate for use with React.",
   "main": "src/Reincarnate.jsx",
   "watch": {
