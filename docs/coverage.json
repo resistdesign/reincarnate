@@ -1,0 +1,53 @@
+{
+  "coverage": "24.32%",
+  "expectCount": 37,
+  "actualCount": 9,
+  "files": {
+    "src/Reincarnate.jsx": {
+      "expectCount": 23,
+      "actualCount": 9,
+      "undocumentLines": [
+        31,
+        34,
+        35,
+        36,
+        67,
+        69,
+        71,
+        73,
+        75,
+        98,
+        102,
+        108,
+        118,
+        126
+      ]
+    },
+    "src/ReincarnateWrapper.jsx": {
+      "expectCount": 13,
+      "actualCount": 0,
+      "undocumentLines": [
+        8,
+        9,
+        10,
+        21,
+        23,
+        27,
+        39,
+        52,
+        62,
+        68,
+        76,
+        88,
+        113
+      ]
+    },
+    "src/getDefaultRuntimeSubMap.jsx": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        3
+      ]
+    }
+  }
+}

@@ -1,0 +1,776 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "name": "src/Reincarnate.jsx",
+    "content": "import React from 'react';\nimport IncarnateInternal, {\n  LifePod as LifePodInternal,\n  HashMatrix as HashMatrixInternal\n} from 'incarnate';\nimport ReincarnateWrapperInternal, {PATHS} from './ReincarnateWrapper';\nimport getDefaultRuntimeSubMap from './getDefaultRuntimeSubMap';\n\n/**\n * @see http://incarnate.resist.design/class/src/HashMatrix.jsx~HashMatrix.html\n * */\nexport const HashMatrix = HashMatrixInternal;\n/**\n * @see http://incarnate.resist.design/class/src/LifePod.jsx~LifePod.html\n * */\nexport const LifePod = LifePodInternal;\n/**\n * @see http://incarnate.resist.design/class/src/Incarnate.jsx~Incarnate.html\n * */\nexport const Incarnate = IncarnateInternal;\n/**\n * @type {ReincarnateWrapper}\n * */\nexport const ReincarnateWrapper = ReincarnateWrapperInternal;\n\n/**\n * Integrate the `Incarnate` dependency lifecycle with **React Router**\n * @see http://incarnate.resist.design\n * */\nexport default class Reincarnate extends Incarnate {\n  static WARNINGS = {\n    NO_HISTORY_OBJECT_SUPPLIED: 'NO_HISTORY_OBJECT_SUPPLIED'\n  };\n  static DEFAULT_NAME = 'Reincarnate';\n  static DEFAULT_ROUTE_PATH_DELIMITER = '/';\n  static SUPPLIED_DEPENDENCY_NAMES = {\n    RUNTIME: 'RUNTIME'\n  };\n\n  /**\n   * The `string` delimiter for route paths.\n   * @type {string}\n   * */\n  routePathDelimiter;\n\n  /**\n   * A map of aliases for route paths.\n   * Keys are existing route paths, values are actual paths to dependencies.\n   * @type {Object.<string>}\n   * */\n  pathAliasMap;\n\n  /**\n   * A function used to handle dependency resolution errors.\n   * `handleResolveError(error = {message: '', data: *}):*`\n   * @type {Function}\n   * */\n  handleResolveError;\n\n  /**\n   * A history controller.\n   * @type {Object}\n   *\n   * */\n  history;\n\n  unlistenToHistory;\n\n  location;\n\n  params;\n\n  routeProps;\n\n  constructor(config = {}) {\n    super(config);\n\n    if (!this.hasOwnProperty('routePathDelimiter')) {\n      this.routePathDelimiter = Reincarnate.DEFAULT_ROUTE_PATH_DELIMITER;\n    }\n\n    if (!this.hasOwnProperty('pathAliasMap')) {\n      this.pathAliasMap = {};\n    }\n\n    if (!this.hasOwnProperty('history')) {\n      console.warn(Reincarnate.WARNINGS.NO_HISTORY_OBJECT_SUPPLIED, this);\n    } else if (\n      this.history instanceof Object &&\n      this.history.getCurrentLocation instanceof Function\n    ) {\n      this.location = this.history.getCurrentLocation();\n    }\n\n    this.setupMap(this.map);\n  }\n\n  setupMap(map = {}) {\n    // IMPORTANT: Declare the `RUNTIME` sub-map.\n    const runtimeMap = getDefaultRuntimeSubMap(this);\n\n    this.map = {\n      ...map,\n      [Reincarnate.SUPPLIED_DEPENDENCY_NAMES.RUNTIME]: runtimeMap\n    };\n  }\n\n  getPathFromRoutes(currentRoute, routeList = []) {\n    const routeIndex = routeList.indexOf(currentRoute);\n    const delimiter = this.routePathDelimiter;\n\n    return routeList\n      .filter((r, i) => i <= routeIndex)\n      .map(({path}) => path === delimiter ? '' : path)\n      .join(delimiter) || delimiter;\n  }\n\n  getPathOrAlias(path) {\n    if (this.pathAliasMap.hasOwnProperty(path)) {\n      return this.pathAliasMap[path];\n    }\n\n    return path;\n  }\n\n  createElement = (Component, props = {}) => {\n    const {\n      key: multiComponentKey,\n      route,\n      routes = [],\n      params,\n      children\n    } = props;\n    const childRoute = routes[routes.indexOf(route) + 1] || {};\n    const {components = {}} = childRoute;\n    const directProps = {\n      children,\n      ...Object.keys(components)\n        .reduce((acc, k) => {\n          acc[k] = props[k];\n\n          return acc;\n        }, {})\n    };\n    const PATH = this.getPathFromRoutes(route, routes);\n    const DEPENDENCY = this.getDependency(\n      this.getPathOrAlias(PATH)\n    );\n\n    // TRICKY: IMPORTANT: Set the current `params` and `routeProps` on this instance.\n    this.params = params;\n    this.routeProps = props;\n\n    return (\n      <ReincarnateWrapper\n        key={`ReincarnateWrapper:${PATH}`}\n        path={PATH}\n        dependency={DEPENDENCY}\n        componentClass={Component}\n        multiComponentKey={multiComponentKey}\n        directProps={directProps}\n        handleResolveError={this.handleResolveError}\n      />\n    );\n  };\n}\n",
+    "static": true,
+    "longname": "/Users/ryangraff/projects/reincarnate/src/Reincarnate.jsx",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 1,
+    "kind": "variable",
+    "name": "HashMatrix",
+    "memberof": "src/Reincarnate.jsx",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~HashMatrix",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate",
+    "importStyle": "{HashMatrix}",
+    "description": "",
+    "see": [
+      "http://incarnate.resist.design/class/src/HashMatrix.jsx~HashMatrix.html"
+    ],
+    "lineNumber": 12,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 2,
+    "kind": "variable",
+    "name": "LifePod",
+    "memberof": "src/Reincarnate.jsx",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~LifePod",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate",
+    "importStyle": "{LifePod}",
+    "description": "",
+    "see": [
+      "http://incarnate.resist.design/class/src/LifePod.jsx~LifePod.html"
+    ],
+    "lineNumber": 16,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 3,
+    "kind": "variable",
+    "name": "Incarnate",
+    "memberof": "src/Reincarnate.jsx",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Incarnate",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate",
+    "importStyle": "{Incarnate}",
+    "description": "",
+    "see": [
+      "http://incarnate.resist.design/class/src/Incarnate.jsx~Incarnate.html"
+    ],
+    "lineNumber": 20,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 4,
+    "kind": "variable",
+    "name": "ReincarnateWrapper",
+    "memberof": "src/Reincarnate.jsx",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~ReincarnateWrapper",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate",
+    "importStyle": "{ReincarnateWrapper}",
+    "description": "",
+    "lineNumber": 24,
+    "type": {
+      "nullable": null,
+      "types": [
+        "ReincarnateWrapper"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 5,
+    "kind": "class",
+    "name": "Reincarnate",
+    "memberof": "src/Reincarnate.jsx",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Reincarnate",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate",
+    "importStyle": "Reincarnate",
+    "description": "Integrate the `Incarnate` dependency lifecycle with **React Router**",
+    "see": [
+      "http://incarnate.resist.design"
+    ],
+    "lineNumber": 30,
+    "interface": false,
+    "extends": [
+      "Incarnate"
+    ]
+  },
+  {
+    "__docId__": 6,
+    "kind": "member",
+    "name": "WARNINGS",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Reincarnate.WARNINGS",
+    "access": "public",
+    "description": null,
+    "lineNumber": 31,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 7,
+    "kind": "member",
+    "name": "DEFAULT_NAME",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Reincarnate.DEFAULT_NAME",
+    "access": "public",
+    "description": null,
+    "lineNumber": 34,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 8,
+    "kind": "member",
+    "name": "DEFAULT_ROUTE_PATH_DELIMITER",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Reincarnate.DEFAULT_ROUTE_PATH_DELIMITER",
+    "access": "public",
+    "description": null,
+    "lineNumber": 35,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 9,
+    "kind": "member",
+    "name": "SUPPLIED_DEPENDENCY_NAMES",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": true,
+    "longname": "src/Reincarnate.jsx~Reincarnate.SUPPLIED_DEPENDENCY_NAMES",
+    "access": "public",
+    "description": null,
+    "lineNumber": 36,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 10,
+    "kind": "member",
+    "name": "routePathDelimiter",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#routePathDelimiter",
+    "access": "public",
+    "description": "The `string` delimiter for route paths.",
+    "lineNumber": 44,
+    "type": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 11,
+    "kind": "member",
+    "name": "pathAliasMap",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#pathAliasMap",
+    "access": "public",
+    "description": "A map of aliases for route paths.\nKeys are existing route paths, values are actual paths to dependencies.",
+    "lineNumber": 51,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object.<string>"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 12,
+    "kind": "member",
+    "name": "handleResolveError",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#handleResolveError",
+    "access": "public",
+    "description": "A function used to handle dependency resolution errors.\n`handleResolveError(error = {message: '', data: *}):*`",
+    "lineNumber": 58,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 13,
+    "kind": "member",
+    "name": "history",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#history",
+    "access": "public",
+    "description": "A history controller.",
+    "lineNumber": 65,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 14,
+    "kind": "member",
+    "name": "unlistenToHistory",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#unlistenToHistory",
+    "access": "public",
+    "description": null,
+    "lineNumber": 67,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 15,
+    "kind": "member",
+    "name": "location",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#location",
+    "access": "public",
+    "description": null,
+    "lineNumber": 69,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 16,
+    "kind": "member",
+    "name": "params",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#params",
+    "access": "public",
+    "description": null,
+    "lineNumber": 71,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 17,
+    "kind": "member",
+    "name": "routeProps",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#routeProps",
+    "access": "public",
+    "description": null,
+    "lineNumber": 73,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 18,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 75,
+    "undocument": true
+  },
+  {
+    "__docId__": 22,
+    "kind": "method",
+    "name": "setupMap",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#setupMap",
+    "access": "public",
+    "description": null,
+    "lineNumber": 98,
+    "undocument": true,
+    "params": [
+      {
+        "name": "map",
+        "optional": true,
+        "types": [
+          "{}"
+        ],
+        "defaultRaw": {},
+        "defaultValue": "{}"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 23,
+    "kind": "member",
+    "name": "map",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#map",
+    "access": "public",
+    "description": null,
+    "lineNumber": 102,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{...map: Object, \"undefined\": *}"
+      ]
+    }
+  },
+  {
+    "__docId__": 24,
+    "kind": "method",
+    "name": "getPathFromRoutes",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#getPathFromRoutes",
+    "access": "public",
+    "description": null,
+    "lineNumber": 108,
+    "undocument": true,
+    "params": [
+      {
+        "name": "currentRoute",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "routeList",
+        "optional": true,
+        "types": [
+          "*[]"
+        ],
+        "defaultRaw": [],
+        "defaultValue": "[]"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 25,
+    "kind": "method",
+    "name": "getPathOrAlias",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#getPathOrAlias",
+    "access": "public",
+    "description": null,
+    "lineNumber": 118,
+    "undocument": true,
+    "params": [
+      {
+        "name": "path",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 26,
+    "kind": "member",
+    "name": "createElement",
+    "memberof": "src/Reincarnate.jsx~Reincarnate",
+    "static": false,
+    "longname": "src/Reincarnate.jsx~Reincarnate#createElement",
+    "access": "public",
+    "description": null,
+    "lineNumber": 126,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 29,
+    "kind": "file",
+    "name": "src/ReincarnateWrapper.jsx",
+    "content": "import T from 'prop-types';\nimport React, {PureComponent} from 'react';\nimport {\n  HashMatrix,\n  LifePod\n} from 'incarnate';\n\nexport default class ReincarnateWrapper extends PureComponent {\n  static PLACE_HOLDER_CLASS_NAME = 'REINCARNATE_COMPONENT_PLACEHOLDER';\n  static propTypes = {\n    path: T.string,\n    multiComponentKey: T.string,\n    dependency: T.instanceOf(\n      HashMatrix\n    ),\n    componentClass: T.func,\n    directProps: T.object,\n    handleResolveError: T.func\n  };\n\n  mounted = false;\n\n  state = {\n    componentProps: undefined\n  };\n\n  componentWillMount() {\n    const {dependency} = this.props;\n\n    this.mounted = true;\n\n    if (dependency instanceof HashMatrix) {\n      dependency.addChangeHandler('', this.updateComponentProperties);\n    }\n\n    this.updateComponentProperties();\n  }\n\n  componentWillReceiveProps(nextProps) {\n    const {dependency: oldDependency} = this.props;\n    const {dependency} = nextProps;\n\n    if (oldDependency instanceof HashMatrix) {\n      oldDependency.removeChangeHandler('', this.updateComponentProperties);\n    }\n\n    if (dependency instanceof HashMatrix) {\n      dependency.addChangeHandler('', this.updateComponentProperties);\n    }\n  }\n\n  componentWillUnmount() {\n    const {dependency} = this.props;\n\n    this.mounted = false;\n\n    if (dependency instanceof HashMatrix) {\n      dependency.removeChangeHandler('', this.updateComponentProperties);\n    }\n  }\n\n  safeSetState = (...args) => {\n    if (this.mounted) {\n      return this.setState(...args);\n    }\n  };\n\n  handleResolveError(error) {\n    const {handleResolveError} = this.props;\n\n    if (handleResolveError instanceof Function) {\n      handleResolveError(error);\n    }\n  }\n\n  async resolveDependencyPromise(promise) {\n    try {\n      const componentProps = await promise;\n\n      this.safeSetState({\n        componentProps\n      });\n    } catch (error) {\n      this.handleResolveError(error);\n    }\n  }\n\n  updateComponentProperties = () => {\n    try {\n      const {dependency} = this.props;\n      const componentProps = dependency instanceof LifePod ?\n        dependency.resolve() :\n        // TRICKY: If the dependency is not directly defined just use a default object\n        // so that the component will be rendered.\n        dependency.getPath() || {};\n\n      if (componentProps instanceof Promise) {\n        this.resolveDependencyPromise(componentProps);\n\n        this.safeSetState({\n          componentProps: undefined\n        });\n      } else {\n        this.safeSetState({\n          componentProps\n        });\n      }\n    } catch (error) {\n      this.handleResolveError(error);\n    }\n  };\n\n  render() {\n    const {componentProps} = this.state;\n\n    if (componentProps instanceof Object) {\n      const {\n        multiComponentKey,\n        componentClass: ComponentClass,\n        directProps\n      } = this.props;\n      const renderProps = {\n        ...(typeof multiComponentKey === 'string' ?\n          componentProps[multiComponentKey] :\n          componentProps),\n        ...directProps\n      };\n\n      return (\n        <ComponentClass\n          {...renderProps}\n        />\n      );\n    } else {\n      return (\n        <div\n          className={ReincarnateWrapper.PLACE_HOLDER_CLASS_NAME}\n        >\n        </div>\n      );\n    }\n  }\n}\n",
+    "static": true,
+    "longname": "/Users/ryangraff/projects/reincarnate/src/ReincarnateWrapper.jsx",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 30,
+    "kind": "class",
+    "name": "ReincarnateWrapper",
+    "memberof": "src/ReincarnateWrapper.jsx",
+    "static": true,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate/src/ReincarnateWrapper.jsx",
+    "importStyle": "ReincarnateWrapper",
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "interface": false,
+    "extends": [
+      "react~PureComponent"
+    ]
+  },
+  {
+    "__docId__": 31,
+    "kind": "member",
+    "name": "PLACE_HOLDER_CLASS_NAME",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": true,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper.PLACE_HOLDER_CLASS_NAME",
+    "access": "public",
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 32,
+    "kind": "member",
+    "name": "propTypes",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": true,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper.propTypes",
+    "access": "public",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 33,
+    "kind": "member",
+    "name": "mounted",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#mounted",
+    "access": "public",
+    "description": null,
+    "lineNumber": 21,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 34,
+    "kind": "member",
+    "name": "state",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#state",
+    "access": "public",
+    "description": null,
+    "lineNumber": 23,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 35,
+    "kind": "method",
+    "name": "componentWillMount",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#componentWillMount",
+    "access": "public",
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 37,
+    "kind": "method",
+    "name": "componentWillReceiveProps",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#componentWillReceiveProps",
+    "access": "public",
+    "description": null,
+    "lineNumber": 39,
+    "undocument": true,
+    "params": [
+      {
+        "name": "nextProps",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 38,
+    "kind": "method",
+    "name": "componentWillUnmount",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#componentWillUnmount",
+    "access": "public",
+    "description": null,
+    "lineNumber": 52,
+    "undocument": true,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 40,
+    "kind": "member",
+    "name": "safeSetState",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#safeSetState",
+    "access": "public",
+    "description": null,
+    "lineNumber": 62,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 41,
+    "kind": "method",
+    "name": "handleResolveError",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#handleResolveError",
+    "access": "public",
+    "description": null,
+    "lineNumber": 68,
+    "undocument": true,
+    "params": [
+      {
+        "name": "error",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 42,
+    "kind": "method",
+    "name": "resolveDependencyPromise",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#resolveDependencyPromise",
+    "access": "public",
+    "description": null,
+    "lineNumber": 76,
+    "undocument": true,
+    "params": [
+      {
+        "name": "promise",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 43,
+    "kind": "member",
+    "name": "updateComponentProperties",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#updateComponentProperties",
+    "access": "public",
+    "description": null,
+    "lineNumber": 88,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 44,
+    "kind": "method",
+    "name": "render",
+    "memberof": "src/ReincarnateWrapper.jsx~ReincarnateWrapper",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/ReincarnateWrapper.jsx~ReincarnateWrapper#render",
+    "access": "public",
+    "description": null,
+    "lineNumber": 113,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 45,
+    "kind": "file",
+    "name": "src/getDefaultRuntimeSubMap.jsx",
+    "content": "import QueryString from 'query-string';\n\nexport default function getDefaultRuntimeSubMap(reincarnate = {}) {\n  return {\n    subMap: {\n      global: {\n        factory: () => window || global\n      },\n      history: {\n        invalidators: [\n          'history'\n        ],\n        factory: (invalidateHistory) => {\n          if (reincarnate.history instanceof Object) {\n            if (reincarnate.unlistenToHistory instanceof Function) {\n              reincarnate.unlistenToHistory();\n            }\n\n            reincarnate.unlistenToHistory = reincarnate.history.listen(() => {\n              reincarnate.location = reincarnate.history.getCurrentLocation();\n              invalidateHistory();\n            });\n\n            return reincarnate.history;\n          }\n        }\n      },\n      location: {\n        required: [\n          'history'\n        ],\n        factory: () => reincarnate.location || {}\n      },\n      params: {\n        required: [\n          'history'\n        ],\n        factory: () => reincarnate.params || {}\n      },\n      query: {\n        required: [\n          'location'\n        ],\n        factory: ({search = ''}) => QueryString.parse(\n          search,\n          {\n            arrayFormat: 'bracket'\n          }\n        )\n      },\n      props: {\n        required: [\n          'history'\n        ],\n        factory: () => reincarnate.routeProps || {}\n      }\n    }\n  };\n}\n",
+    "static": true,
+    "longname": "/Users/ryangraff/projects/reincarnate/src/getDefaultRuntimeSubMap.jsx",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 46,
+    "kind": "function",
+    "name": "getDefaultRuntimeSubMap",
+    "memberof": "src/getDefaultRuntimeSubMap.jsx",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/getDefaultRuntimeSubMap.jsx~getDefaultRuntimeSubMap",
+    "access": "public",
+    "export": true,
+    "importPath": "resistdesign-reincarnate/src/getDefaultRuntimeSubMap.jsx",
+    "importStyle": "getDefaultRuntimeSubMap",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "params": [
+      {
+        "name": "reincarnate",
+        "optional": true,
+        "types": [
+          "{}"
+        ],
+        "defaultRaw": {},
+        "defaultValue": "{}"
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"subMap\": *}"
+      ]
+    }
+  },
+  {
+    "kind": "index",
+    "content": "# Reincarnate [![Build Status](https://travis-ci.org/resistdesign/reincarnate.svg?branch=master)](https://travis-ci.org/resistdesign/reincarnate)\n\nUse [Incarnate](http://incarnate.resist.design) with [React](https://reactjs.org).\n\n## Install\n\n`npm i -S reincarnate`\n\n## Usage\n\nSee the website: http://reincarnate.resist.design\n\n## License\n\n[MIT](LICENSE.txt)\n",
+    "longname": "/Users/ryangraff/projects/reincarnate/README.md",
+    "name": "./README.md",
+    "static": true,
+    "access": "public"
+  }
+]
