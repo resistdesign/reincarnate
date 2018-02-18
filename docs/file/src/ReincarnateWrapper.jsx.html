@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/ReincarnateWrapper.jsx | resistdesign-reincarnate</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="An implementation of Incarnate for use with React."><meta property="twitter:card" content="summary"><meta property="twitter:title" content="resistdesign-reincarnate"><meta property="twitter:description" content="An implementation of Incarnate for use with React."></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/resistdesign/reincarnate"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Reincarnate.jsx~Reincarnate.html">Reincarnate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/ReincarnateWrapper.jsx~ReincarnateWrapper.html">ReincarnateWrapper</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultRuntimeSubMap">getDefaultRuntimeSubMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-HashMatrix">HashMatrix</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Incarnate">Incarnate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LifePod">LifePod</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-ReincarnateWrapper">ReincarnateWrapper</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/ReincarnateWrapper.jsx</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import T from &apos;prop-types&apos;;
+import React, {PureComponent} from &apos;react&apos;;
+import {
+  HashMatrix,
+  LifePod
+} from &apos;incarnate&apos;;
+
+export default class ReincarnateWrapper extends PureComponent {
+  static PLACE_HOLDER_CLASS_NAME = &apos;REINCARNATE_COMPONENT_PLACEHOLDER&apos;;
+  static propTypes = {
+    path: T.string,
+    multiComponentKey: T.string,
+    dependency: T.instanceOf(
+      HashMatrix
+    ),
+    componentClass: T.func,
+    directProps: T.object,
+    handleResolveError: T.func
+  };
+
+  mounted = false;
+
+  state = {
+    componentProps: undefined
+  };
+
+  componentWillMount() {
+    const {dependency} = this.props;
+
+    this.mounted = true;
+
+    if (dependency instanceof HashMatrix) {
+      dependency.addChangeHandler(&apos;&apos;, this.updateComponentProperties);
+    }
+
+    this.updateComponentProperties();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const {dependency: oldDependency} = this.props;
+    const {dependency} = nextProps;
+
+    if (oldDependency instanceof HashMatrix) {
+      oldDependency.removeChangeHandler(&apos;&apos;, this.updateComponentProperties);
+    }
+
+    if (dependency instanceof HashMatrix) {
+      dependency.addChangeHandler(&apos;&apos;, this.updateComponentProperties);
+    }
+  }
+
+  componentWillUnmount() {
+    const {dependency} = this.props;
+
+    this.mounted = false;
+
+    if (dependency instanceof HashMatrix) {
+      dependency.removeChangeHandler(&apos;&apos;, this.updateComponentProperties);
+    }
+  }
+
+  safeSetState = (...args) =&gt; {
+    if (this.mounted) {
+      return this.setState(...args);
+    }
+  };
+
+  handleResolveError(error) {
+    const {handleResolveError} = this.props;
+
+    if (handleResolveError instanceof Function) {
+      handleResolveError(error);
+    }
+  }
+
+  async resolveDependencyPromise(promise) {
+    try {
+      const componentProps = await promise;
+
+      this.safeSetState({
+        componentProps
+      });
+    } catch (error) {
+      this.handleResolveError(error);
+    }
+  }
+
+  updateComponentProperties = () =&gt; {
+    try {
+      const {dependency} = this.props;
+      const componentProps = dependency instanceof LifePod ?
+        dependency.resolve() :
+        // TRICKY: If the dependency is not directly defined just use a default object
+        // so that the component will be rendered.
+        dependency.getPath() || {};
+
+      if (componentProps instanceof Promise) {
+        this.resolveDependencyPromise(componentProps);
+
+        this.safeSetState({
+          componentProps: undefined
+        });
+      } else {
+        this.safeSetState({
+          componentProps
+        });
+      }
+    } catch (error) {
+      this.handleResolveError(error);
+    }
+  };
+
+  render() {
+    const {componentProps} = this.state;
+
+    if (componentProps instanceof Object) {
+      const {
+        multiComponentKey,
+        componentClass: ComponentClass,
+        directProps
+      } = this.props;
+      const renderProps = {
+        ...(typeof multiComponentKey === &apos;string&apos; ?
+          componentProps[multiComponentKey] :
+          componentProps),
+        ...directProps
+      };
+
+      return (
+        &lt;ComponentClass
+          {...renderProps}
+        /&gt;
+      );
+    } else {
+      return (
+        &lt;div
+          className={ReincarnateWrapper.PLACE_HOLDER_CLASS_NAME}
+        &gt;
+        &lt;/div&gt;
+      );
+    }
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

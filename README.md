@@ -1,13 +1,15 @@
-# Reincarnate
+# Reincarnate [![Build Status](https://travis-ci.org/resistdesign/reincarnate.svg?branch=master)](https://travis-ci.org/resistdesign/reincarnate)
 
-Use Incarnate with React.
+Use [Incarnate](http://incarnate.resist.design) with [React](https://reactjs.org).
 
 ## Install
 
 `npm i -S reincarnate`
 
-## Build/Run Demo
+## Usage
 
-1. Create An App: `rdx app`
-1. Compile: `rdx compile` or `rdx compile -a src/index.html`
-1. Serve: `rdx serve` or `rdx serve -a src/index.html`
+See the website: http://reincarnate.resist.design
+
+## License
+
+[MIT](LICENSE.txt)

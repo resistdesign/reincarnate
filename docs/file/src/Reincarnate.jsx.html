@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Reincarnate.jsx | resistdesign-reincarnate</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="An implementation of Incarnate for use with React."><meta property="twitter:card" content="summary"><meta property="twitter:title" content="resistdesign-reincarnate"><meta property="twitter:description" content="An implementation of Incarnate for use with React."></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/resistdesign/reincarnate"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Reincarnate.jsx~Reincarnate.html">Reincarnate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/ReincarnateWrapper.jsx~ReincarnateWrapper.html">ReincarnateWrapper</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDefaultRuntimeSubMap">getDefaultRuntimeSubMap</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-HashMatrix">HashMatrix</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-Incarnate">Incarnate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LifePod">LifePod</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-ReincarnateWrapper">ReincarnateWrapper</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Reincarnate.jsx</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import React from &apos;react&apos;;
+import IncarnateInternal, {
+  LifePod as LifePodInternal,
+  HashMatrix as HashMatrixInternal
+} from &apos;incarnate&apos;;
+import ReincarnateWrapperInternal, {PATHS} from &apos;./ReincarnateWrapper&apos;;
+import getDefaultRuntimeSubMap from &apos;./getDefaultRuntimeSubMap&apos;;
+
+/**
+ * @see http://incarnate.resist.design/class/src/HashMatrix.jsx~HashMatrix.html
+ * */
+export const HashMatrix = HashMatrixInternal;
+/**
+ * @see http://incarnate.resist.design/class/src/LifePod.jsx~LifePod.html
+ * */
+export const LifePod = LifePodInternal;
+/**
+ * @see http://incarnate.resist.design/class/src/Incarnate.jsx~Incarnate.html
+ * */
+export const Incarnate = IncarnateInternal;
+/**
+ * @type {ReincarnateWrapper}
+ * */
+export const ReincarnateWrapper = ReincarnateWrapperInternal;
+
+/**
+ * Integrate the `Incarnate` dependency lifecycle with **React Router**
+ * @see http://incarnate.resist.design
+ * */
+export default class Reincarnate extends Incarnate {
+  static WARNINGS = {
+    NO_HISTORY_OBJECT_SUPPLIED: &apos;NO_HISTORY_OBJECT_SUPPLIED&apos;
+  };
+  static DEFAULT_NAME = &apos;Reincarnate&apos;;
+  static DEFAULT_ROUTE_PATH_DELIMITER = &apos;/&apos;;
+  static SUPPLIED_DEPENDENCY_NAMES = {
+    RUNTIME: &apos;RUNTIME&apos;
+  };
+
+  /**
+   * The `string` delimiter for route paths.
+   * @type {string}
+   * */
+  routePathDelimiter;
+
+  /**
+   * A map of aliases for route paths.
+   * Keys are existing route paths, values are actual paths to dependencies.
+   * @type {Object.&lt;string&gt;}
+   * */
+  pathAliasMap;
+
+  /**
+   * A function used to handle dependency resolution errors.
+   * `handleResolveError(error = {message: &apos;&apos;, data: *}):*`
+   * @type {Function}
+   * */
+  handleResolveError;
+
+  /**
+   * A history controller.
+   * @type {Object}
+   *
+   * */
+  history;
+
+  unlistenToHistory;
+
+  location;
+
+  params;
+
+  routeProps;
+
+  constructor(config = {}) {
+    super(config);
+
+    if (!this.hasOwnProperty(&apos;routePathDelimiter&apos;)) {
+      this.routePathDelimiter = Reincarnate.DEFAULT_ROUTE_PATH_DELIMITER;
+    }
+
+    if (!this.hasOwnProperty(&apos;pathAliasMap&apos;)) {
+      this.pathAliasMap = {};
+    }
+
+    if (!this.hasOwnProperty(&apos;history&apos;)) {
+      console.warn(Reincarnate.WARNINGS.NO_HISTORY_OBJECT_SUPPLIED, this);
+    } else if (
+      this.history instanceof Object &amp;&amp;
+      this.history.getCurrentLocation instanceof Function
+    ) {
+      this.location = this.history.getCurrentLocation();
+    }
+
+    this.setupMap(this.map);
+  }
+
+  setupMap(map = {}) {
+    // IMPORTANT: Declare the `RUNTIME` sub-map.
+    const runtimeMap = getDefaultRuntimeSubMap(this);
+
+    this.map = {
+      ...map,
+      [Reincarnate.SUPPLIED_DEPENDENCY_NAMES.RUNTIME]: runtimeMap
+    };
+  }
+
+  getPathFromRoutes(currentRoute, routeList = []) {
+    const routeIndex = routeList.indexOf(currentRoute);
+    const delimiter = this.routePathDelimiter;
+
+    return routeList
+      .filter((r, i) =&gt; i &lt;= routeIndex)
+      .map(({path}) =&gt; path === delimiter ? &apos;&apos; : path)
+      .join(delimiter) || delimiter;
+  }
+
+  getPathOrAlias(path) {
+    if (this.pathAliasMap.hasOwnProperty(path)) {
+      return this.pathAliasMap[path];
+    }
+
+    return path;
+  }
+
+  createElement = (Component, props = {}) =&gt; {
+    const {
+      key: multiComponentKey,
+      route,
+      routes = [],
+      params,
+      children
+    } = props;
+    const childRoute = routes[routes.indexOf(route) + 1] || {};
+    const {components = {}} = childRoute;
+    const directProps = {
+      children,
+      ...Object.keys(components)
+        .reduce((acc, k) =&gt; {
+          acc[k] = props[k];
+
+          return acc;
+        }, {})
+    };
+    const PATH = this.getPathFromRoutes(route, routes);
+    const DEPENDENCY = this.getDependency(
+      this.getPathOrAlias(PATH)
+    );
+
+    // TRICKY: IMPORTANT: Set the current `params` and `routeProps` on this instance.
+    this.params = params;
+    this.routeProps = props;
+
+    return (
+      &lt;ReincarnateWrapper
+        key={`ReincarnateWrapper:${PATH}`}
+        path={PATH}
+        dependency={DEPENDENCY}
+        componentClass={Component}
+        multiComponentKey={multiComponentKey}
+        directProps={directProps}
+        handleResolveError={this.handleResolveError}
+      /&gt;
+    );
+  };
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
